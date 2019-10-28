@@ -43,6 +43,7 @@ if __name__ == '__main__':
 
         for i, data in enumerate(dataset):  # inner loop within one epoch
             iter_start_time = time.time()  # timer for computation per iteration
+            print(str(i)+":", iter_start_time)
             if total_iters % opt.print_freq == 0:
                 t_data = iter_start_time - iter_data_time
 
