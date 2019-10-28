@@ -16,6 +16,7 @@ class BaseOptions():
     def __init__(self):
         """Reset the class; indicates the class hasn't been initailized"""
         self.initialized = False
+        print(torch.__version__)
 
     def initialize(self, parser):
         """Define the common options that are used in both training and test."""
