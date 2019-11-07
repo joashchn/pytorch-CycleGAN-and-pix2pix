@@ -10,7 +10,7 @@ def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
         print(pre_1)
         for tp in os.listdir(file_dir + '/' + dirs):
             if not os.path.isdir(tp):
-                pass
+                continue
             if '前台' not in tp and '外观' not in tp:
                 tp_count += 1
                 print(pre_1 + '_' + str(tp_count))
