@@ -16,18 +16,20 @@ def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
                 for px in os.listdir(file_dir + '/' + dirs + '/' + tp):
                     if px == '1':
                         for f in os.listdir(file_dir + '/' + dirs + '/' + tp + '/' + px):
-                            oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
-                            newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainA/' + pre_fix + f
-                            print(oldname)
-                            print(newname)
-                            os.rename(oldname, newname)
+                            if 'jpg' in f:
+                                oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
+                                newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainA/' + pre_fix + f
+                                print(oldname)
+                                print(newname)
+                                os.rename(oldname, newname)
                     if px == '2':
                         for f in os.listdir(file_dir + '/' + dirs + '/' + tp + '/' + px):
-                            oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
-                            newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainB/' + pre_fix + f
-                            print(oldname)
-                            print(newname)
-                            os.rename(oldname, newname)
+                            if 'jpg' in f:
+                                oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
+                                newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainB/' + pre_fix + f
+                                print(oldname)
+                                print(newname)
+                                os.rename(oldname, newname)
 
         tp_count = 0
 
