@@ -26,7 +26,7 @@ def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
                                 print(newname)
                                 os.rename(oldname, newname)
                                 img1 = Image.open(newname)
-                                img1.resize((2048, 1024), Image.ANTIALIAS)
+                                img1 = img1.resize((2048, 1024), Image.ANTIALIAS)
                                 img1.save(
                                     '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/train_A/' + pre_fix + f,
                                     quality=100)
@@ -38,9 +38,9 @@ def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
                                 print(oldname)
                                 print(newname)
                                 os.rename(oldname, newname)
-                                img1 = Image.open(newname)
-                                img1.resize((2048, 1024), Image.ANTIALIAS)
-                                img1.save(
+                                img2 = Image.open(newname)
+                                img2 = img2.resize((2048, 1024), Image.ANTIALIAS)
+                                img2.save(
                                     '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/train_B/' + pre_fix + f,
                                     quality=100)
 
