@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 
 def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
@@ -20,20 +21,30 @@ def file_name(file_dir, file_type=''):  # 默认为文件夹下的所有文件
                         for f in os.listdir(file_dir + '/' + dirs + '/' + tp + '/' + px):
                             if 'jpg' in f:
                                 oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
-                                newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainA/' + pre_fix + f
+                                newname = '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/trainA/' + pre_fix + f
                                 print(oldname)
                                 print(newname)
                                 os.rename(oldname, newname)
+                                img1 = Image.open(newname)
+                                img1.resize((2048, 1024), Image.ANTIALIAS)
+                                img1.save(
+                                    '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/train_A/' + pre_fix + f,
+                                    quality=100)
                     if px == '2':
                         for f in os.listdir(file_dir + '/' + dirs + '/' + tp + '/' + px):
                             if 'jpg' in f:
                                 oldname = file_dir + '/' + dirs + '/' + tp + '/' + px + '/' + f
-                                newname = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/datasets/oyo2none' + '/trainB/' + pre_fix + f
+                                newname = '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/trainB/' + pre_fix + f
                                 print(oldname)
                                 print(newname)
                                 os.rename(oldname, newname)
+                                img1 = Image.open(newname)
+                                img1.resize((2048, 1024), Image.ANTIALIAS)
+                                img1.save(
+                                    '/data/object_detection/joash/pix2pixHD/datasets/oyo2none' + '/train_B/' + pre_fix + f,
+                                    quality=100)
 
 
-file_dir = '/data/object_detection/joash/pytorch-CycleGAN-and-pix2pix/tmpfile'
+file_dir = '/data/object_detection/joash/pic_a'
 files = file_name(file_dir, 'file_type')
 
