@@ -58,7 +58,6 @@ class TorchVisionModel(BaseModel):
 
         # define networks
         self.model_ft = None
-        self.input_size = 0
 
         if opt.model_name == "resnet":
             """ Resnet18
@@ -67,7 +66,6 @@ class TorchVisionModel(BaseModel):
             self.set_requires_grad(self.model_ft, opt.feature_extract)
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, opt.num_classes)
-            self.input_size = 224
 
         elif opt.model_name == "alexnet":
             """ Alexnet
@@ -76,7 +74,6 @@ class TorchVisionModel(BaseModel):
             self.set_requires_grad(self.model_ft, opt.feature_extract)
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
-            self.input_size = 224
 
         elif opt.model_name == "vgg":
             """ VGG11_bn
@@ -85,7 +82,6 @@ class TorchVisionModel(BaseModel):
             self.set_requires_grad(self.model_ft, opt.feature_extract)
             num_ftrs = self.model_ft.classifier[6].in_features
             self.model_ft.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
-            self.input_size = 224
 
         elif opt.model_name == "squeezenet":
             """ Squeezenet
@@ -94,7 +90,6 @@ class TorchVisionModel(BaseModel):
             self.set_requires_grad(self.model_ft, opt.feature_extract)
             self.model_ft.classifier[1] = nn.Conv2d(512, opt.num_classes, kernel_size=(1, 1), stride=(1, 1))
             self.model_ft.num_classes = opt.num_classes
-            self.input_size = 224
 
         elif opt.model_name == "densenet":
             """ Densenet
@@ -103,7 +98,6 @@ class TorchVisionModel(BaseModel):
             self.set_requires_grad(self.model_ft, opt.feature_extract)
             num_ftrs = self.model_ft.classifier.in_features
             self.model_ft.classifier = nn.Linear(num_ftrs, opt.num_classes)
-            self.input_size = 224
 
         elif opt.model_name == "inception":
             """ Inception v3
@@ -117,7 +111,6 @@ class TorchVisionModel(BaseModel):
             # 处理主要网络
             num_ftrs = self.model_ft.fc.in_features
             self.model_ft.fc = nn.Linear(num_ftrs, opt.num_classes)
-            self.input_size = 299
 
         else:
             print("Invalid model name, exiting...")
