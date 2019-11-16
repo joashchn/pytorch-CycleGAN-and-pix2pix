@@ -6,6 +6,7 @@ from . import networks
 import torch.nn as nn
 from torchvision import models
 import torch.optim as optim
+from .networks import init_net
 
 
 class TorchVisionModel(BaseModel):
@@ -115,6 +116,8 @@ class TorchVisionModel(BaseModel):
         else:
             print("Invalid model name, exiting...")
             exit()
+
+        self.model_ft = init_net(self.model_ft, 'normal', '0.02', [])
 
         # 观察所有参数都在优化
         self.optimizer_ft = optim.SGD(self.model_ft.parameters(), lr=0.001, momentum=0.9)
