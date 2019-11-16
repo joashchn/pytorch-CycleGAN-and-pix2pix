@@ -57,7 +57,10 @@ class ClassDataset(BaseDataset):
         self.train_path_B = sorted(make_dataset(self.dir_train+'/bees', opt.max_dataset_size))
         self.val_path_A = sorted(make_dataset(self.dir_val+'/ants', opt.max_dataset_size))
         self.val_path_B = sorted(make_dataset(self.dir_val+'/bees', opt.max_dataset_size))
-        self.train_size = len(self.train_path_A)
+        self.train_A_size = len(self.train_path_A)
+        self.train_B_size = len(self.train_path_B)
+        self.val_A_size = len(self.val_path_A)
+        self.val_B_size = len(self.val_path_B)
 
         # define the default transform function. You can use <base_dataset.get_transform>; You can also define your custom transform function
         if opt.model_name == 'inception':
@@ -85,10 +88,10 @@ class ClassDataset(BaseDataset):
         #
         # return self.dataset_dic
 
-        train_path_A = self.train_path_A[index]
-        train_path_B = self.train_path_B[index]
-        val_path_A = self.val_path_A[index]
-        val_path_B = self.val_path_B[index]
+        train_path_B = self.train_path_B[index % self.train_B_size]
+        train_path_A = self.train_path_A[index % self.train_A_size]
+        val_path_A = self.val_path_A[index % self.val_A_size]
+        val_path_B = self.val_path_B[index % self.val_B_size]
 
         train_A_img = Image.open(train_path_A).convert('RGB')
         train_B_img = Image.open(train_path_B).convert('RGB')
@@ -104,4 +107,4 @@ class ClassDataset(BaseDataset):
 
     def __len__(self):
         """Return the total number of images."""
-        return self.train_size
+        return self.train_A_size
