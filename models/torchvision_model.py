@@ -159,7 +159,6 @@ class TorchVisionModel(BaseModel):
         loss_B = self.criterion(self.pred_train_B, self.label_B)
         self.loss_train = (loss_A + loss_B) * 0.5
         self.loss_train.backward()
-        print(loss_A, loss_B, self.loss_train)
 
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
