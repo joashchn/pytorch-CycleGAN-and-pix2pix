@@ -55,74 +55,79 @@ class TorchVisionModel(BaseModel):
         self.loss_names = ['train']
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
-        self.opt.model_names = ['Model_FT']
+        self.model_names = ['Ft']
 
         # # define networks
-        # self.model_ft = None
+        self.netFt = None
 
         if opt.model_name == "resnet":
             """ Resnet18
      """
-            self.model_ft = models.resnet18(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
-            num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, opt.num_classes)
+            self.netFt = models.resnet18(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            num_ftrs = self.netFt.fc.in_features
+            self.netFt.fc = nn.Linear(num_ftrs, opt.num_classes)
 
         elif opt.model_name == "alexnet":
             """ Alexnet
      """
-            self.model_ft = models.alexnet(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
-            num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
+            self.netFt = models.alexnet(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            num_ftrs = self.netFt.classifier[6].in_features
+            self.netFt.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
 
         elif opt.model_name == "vgg":
             """ VGG11_bn
      """
-            self.model_ft = models.vgg11_bn(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
-            num_ftrs = self.model_ft.classifier[6].in_features
-            self.model_ft.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
+            self.netFt = models.vgg11_bn(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            num_ftrs = self.netFt.classifier[6].in_features
+            self.netFt.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
 
         elif opt.model_name == "squeezenet":
             """ Squeezenet
      """
-            self.model_ft = models.squeezenet1_0(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
-            self.model_ft.classifier[1] = nn.Conv2d(512, opt.num_classes, kernel_size=(1, 1), stride=(1, 1))
-            self.model_ft.num_classes = opt.num_classes
+            self.netFt = models.squeezenet1_0(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            self.netFt.classifier[1] = nn.Conv2d(512, opt.num_classes, kernel_size=(1, 1), stride=(1, 1))
+            self.netFt.num_classes = opt.num_classes
 
         elif opt.model_name == "densenet":
             """ Densenet
      """
-            self.model_ft = models.densenet121(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
-            num_ftrs = self.model_ft.classifier.in_features
-            self.model_ft.classifier = nn.Linear(num_ftrs, opt.num_classes)
+            self.netFt = models.densenet121(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            num_ftrs = self.netFt.classifier.in_features
+            self.netFt.classifier = nn.Linear(num_ftrs, opt.num_classes)
 
         elif opt.model_name == "inception":
             """ Inception v3
      Be careful, expects (299,299) sized images and has auxiliary output
      """
-            self.model_ft = models.inception_v3(pretrained=opt.use_pretrained)
-            self.set_requires_grad(self.model_ft, opt.feature_extract)
+            self.netFt = models.inception_v3(pretrained=opt.use_pretrained)
+            #self.set_requires_grad(self.netFt, opt.feature_extract)
             # 处理辅助网络
-            num_ftrs = self.model_ft.AuxLogits.fc.in_features
-            self.model_ft.AuxLogits.fc = nn.Linear(num_ftrs, opt.num_classes)
+            num_ftrs = self.netFt.AuxLogits.fc.in_features
+            self.netFt.AuxLogits.fc = nn.Linear(num_ftrs, opt.num_classes)
             # 处理主要网络
-            num_ftrs = self.model_ft.fc.in_features
-            self.model_ft.fc = nn.Linear(num_ftrs, opt.num_classes)
+            num_ftrs = self.netFt.fc.in_features
+            self.netFt.fc = nn.Linear(num_ftrs, opt.num_classes)
 
         else:
             print("Invalid model name, exiting...")
             exit()
 
-        self.model_ft = init_net(self.model_ft, 'normal', '0.02', [])
+        # self.netFt = init_net(self.netFt) 此处暂且手动init
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.netF = self.netFt.to(device)
+        self.netF = torch.nn.DataParallel(self.netF)
 
         # 观察所有参数都在优化
-        self.optimizer_ft = optim.SGD(self.model_ft.parameters(), lr=0.001, momentum=0.9)
+        self.optimizer_ft = optim.SGD(self.netFt.parameters(), lr=opt.lr, momentum=0.9)
+        self.optimizers.append(self.optimizer_ft)
 
         self.criterion = nn.CrossEntropyLoss()
+
 
     def set_input(self, inputs):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
@@ -138,23 +143,29 @@ class TorchVisionModel(BaseModel):
         self.val_B = inputs['val_B'].to(self.device)
 
     def forward(self):
-        """Run forward pass; called by both functions <optimize_parameters> and <test>."""
-        self.pred_train_A = self.model_ft(self.train_A)
-        self.pred_train_B = self.model_ft(self.train_B)
-        self.pred_val_A = self.model_ft(self.val_A)
-        self.pred_val_B = self.model_ft(self.val_B)
+        """Run forward pass; called by both functions <optimize_parameters> and <test>.
+        --dataroot ./datasets/hymenoptera_data --name hymennoptera_squeezenet --model torchvision --gpu_ids -1 --dataset_mode class
+        --dataroot ./datasets/horse2zebra --name horse2zebra_cyclegan --model cycle_gan --gpu_ids -1
+        """
+        self.pred_train_A = self.netFt(self.train_A)
+        self.pred_train_B = self.netFt(self.train_B)
+        self.pred_val_A = self.netFt(self.val_A)
+        self.pred_val_B = self.netFt(self.val_B)
 
-    def backward(self):
-        loss_A = self.criterion(self.pred_train_A, torch.ones([1], dtype=torch.long))
-        loss_B = self.criterion(self.pred_train_B, torch.zeros([1], dtype=torch.long))
+    def backward_Ft(self):
+        loss_A = self.criterion(self.pred_train_A, torch.ones([self.pred_train_A.shape[0]], dtype=torch.long))
+        loss_B = self.criterion(self.pred_train_B, torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long))
         self.loss_train = (loss_A + loss_B) * 0.5
         self.loss_train.backward()
+        print(loss_A, loss_B, self.loss_train)
 
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         # forward
         self.forward()  # compute fake images and reconstruction images.
+
         # backward
+        # self.set_requires_grad(self.netFt, True)
         self.optimizer_ft.zero_grad()
-        self.backward()
+        self.backward_Ft()
         self.optimizer_ft.step()
