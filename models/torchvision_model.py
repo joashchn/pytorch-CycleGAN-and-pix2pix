@@ -64,7 +64,7 @@ class TorchVisionModel(BaseModel):
             """ Resnet18
      """
             self.netFt = models.resnet18(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             num_ftrs = self.netFt.fc.in_features
             self.netFt.fc = nn.Linear(num_ftrs, opt.num_classes)
 
@@ -72,7 +72,7 @@ class TorchVisionModel(BaseModel):
             """ Alexnet
      """
             self.netFt = models.alexnet(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             num_ftrs = self.netFt.classifier[6].in_features
             self.netFt.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
 
@@ -80,7 +80,7 @@ class TorchVisionModel(BaseModel):
             """ VGG11_bn
      """
             self.netFt = models.vgg11_bn(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             num_ftrs = self.netFt.classifier[6].in_features
             self.netFt.classifier[6] = nn.Linear(num_ftrs, opt.num_classes)
 
@@ -88,7 +88,7 @@ class TorchVisionModel(BaseModel):
             """ Squeezenet
      """
             self.netFt = models.squeezenet1_0(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             self.netFt.classifier[1] = nn.Conv2d(512, opt.num_classes, kernel_size=(1, 1), stride=(1, 1))
             self.netFt.num_classes = opt.num_classes
 
@@ -96,7 +96,7 @@ class TorchVisionModel(BaseModel):
             """ Densenet
      """
             self.netFt = models.densenet121(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             num_ftrs = self.netFt.classifier.in_features
             self.netFt.classifier = nn.Linear(num_ftrs, opt.num_classes)
 
@@ -105,7 +105,7 @@ class TorchVisionModel(BaseModel):
      Be careful, expects (299,299) sized images and has auxiliary output
      """
             self.netFt = models.inception_v3(pretrained=opt.use_pretrained)
-            #self.set_requires_grad(self.netFt, opt.feature_extract)
+            # self.set_requires_grad(self.netFt, opt.feature_extract)
             # 处理辅助网络
             num_ftrs = self.netFt.AuxLogits.fc.in_features
             self.netFt.AuxLogits.fc = nn.Linear(num_ftrs, opt.num_classes)
@@ -130,7 +130,6 @@ class TorchVisionModel(BaseModel):
 
         self.criterion = nn.CrossEntropyLoss()
 
-
     def set_input(self, inputs):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
 
@@ -139,27 +138,33 @@ class TorchVisionModel(BaseModel):
 
         The option 'direction' can be used to swap domain A and domain B.
         """
-        self.train_A = inputs['train_A'].to(self.device)
-        self.train_B = inputs['train_B'].to(self.device)
-        self.val_A = inputs['val_A'].to(self.device)
-        self.val_B = inputs['val_B'].to(self.device)
+        # self.train_A = inputs['train_A'].to(self.device)
+        # self.train_B = inputs['train_B'].to(self.device)
+        # self.val_A = inputs['val_A'].to(self.device)
+        # self.val_B = inputs['val_B'].to(self.device)
+
+        self.train_imgs = inputs['train'][0].to(self.device)
+        self.train_label = inputs['train'][1].to(self.device)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
         --dataroot ./datasets/hymenoptera_data --name hymennoptera_squeezenet --model torchvision --gpu_ids -1 --dataset_mode class
         --dataroot ./datasets/horse2zebra --name horse2zebra_cyclegan --model cycle_gan --gpu_ids -1
         """
-        self.pred_train_A = self.netFt(self.train_A)
-        self.pred_train_B = self.netFt(self.train_B)
-        self.pred_val_A = self.netFt(self.val_A)
-        self.pred_val_B = self.netFt(self.val_B)
-        self.label_A = torch.ones([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
-        self.label_B = torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
+        # self.pred_train_B = self.netFt(self.train_B)
+        # self.pred_val_A = self.netFt(self.val_A)
+        # self.pred_val_B = self.netFt(self.val_B)
+        # self.label_A = torch.ones([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
+        # self.label_B = torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
+
+        self.pred_train = self.netFt(self.train_imgs)
 
     def backward_Ft(self):
-        loss_A = self.criterion(self.pred_train_A, self.label_A)
-        loss_B = self.criterion(self.pred_train_B, self.label_B)
-        self.loss_train = (loss_A + loss_B) * 0.5
+        # loss_A = self.criterion(self.pred_train_A, self.label_A)
+        # loss_B = self.criterion(self.pred_train_B, self.label_B)
+        # self.loss_train = (loss_A + loss_B) * 0.5
+
+        self.loss_train = self.criterion(self.pred_train, self.train_label)
         self.loss_train.backward()
 
     def optimize_parameters(self):
