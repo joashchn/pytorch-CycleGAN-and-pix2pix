@@ -120,8 +120,9 @@ class TorchVisionModel(BaseModel):
         # self.netFt = init_net(self.netFt) 此处暂且手动init
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # self.netF = self.netFt.to(self.device)
-        self.netFt = torch.nn.DataParallel(self.netFt, device_ids=opt.gpu_ids)
-        self.netFt = self.netFt.cuda(opt.gpu_ids[0])
+        if len(opt.gpu_ids) > 0:
+            self.netFt = torch.nn.DataParallel(self.netFt, device_ids=opt.gpu_ids)
+            self.netFt = self.netFt.cuda(opt.gpu_ids[0])
 
         # 观察所有参数都在优化
         self.optimizer_ft = optim.SGD(self.netFt.parameters(), lr=opt.lr, momentum=0.9)
