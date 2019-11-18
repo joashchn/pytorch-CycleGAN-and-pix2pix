@@ -118,8 +118,8 @@ class TorchVisionModel(BaseModel):
             exit()
 
         # self.netFt = init_net(self.netFt) 此处暂且手动init
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.netF = self.netFt.to(device)
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.netF = self.netFt.to(self.device)
         self.netF = torch.nn.DataParallel(self.netF)
 
         # 观察所有参数都在优化
@@ -151,10 +151,12 @@ class TorchVisionModel(BaseModel):
         self.pred_train_B = self.netFt(self.train_B)
         self.pred_val_A = self.netFt(self.val_A)
         self.pred_val_B = self.netFt(self.val_B)
+        self.label_A = torch.ones([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
+        self.label_B = torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
 
     def backward_Ft(self):
-        loss_A = self.criterion(self.pred_train_A, torch.ones([self.pred_train_A.shape[0]], dtype=torch.long))
-        loss_B = self.criterion(self.pred_train_B, torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long))
+        loss_A = self.criterion(self.pred_train_A, self.label_A)
+        loss_B = self.criterion(self.pred_train_B, self.label_B)
         self.loss_train = (loss_A + loss_B) * 0.5
         self.loss_train.backward()
         print(loss_A, loss_B, self.loss_train)
