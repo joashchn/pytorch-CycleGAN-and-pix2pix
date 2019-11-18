@@ -23,6 +23,7 @@ from options.train_options import TrainOptions
 from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
+from collections import OrderedDict
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
@@ -70,9 +71,12 @@ if __name__ == '__main__':
 
             iter_data_time = time.time()
 
-        losses = model.get_current_losses()
+        # calculate & print & display loss every epoch
+        loss_epoch = list(model.get_current_losses().values())[0] / dataset_size
         t_comp = (time.time() - epoch_start_time) / opt.batch_size
-        visualizer.print_current_losses(epoch, epoch_iter, losses, t_comp, time.time() - epoch_start_time)
+        visualizer.print_epoch_losses(epoch, epoch_iter, loss_epoch, t_comp, time.time() - epoch_start_time)
+        if opt.display_id > 0:
+            visualizer.plot_epoch_losses(epoch, loss_epoch)
 
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
@@ -80,4 +84,6 @@ if __name__ == '__main__':
             model.save_networks(epoch)
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
+
+        model.loss_epoch = 0
         model.update_learning_rate()                     # update learning rates at the end of every epoch.

@@ -6,7 +6,6 @@ import time
 from . import util, html
 from subprocess import Popen, PIPE
 
-
 if sys.version_info[0] == 2:
     VisdomExceptionBase = Exception
 else:
@@ -105,7 +104,7 @@ class Visualizer():
         """
         if self.display_id > 0:  # show images in the browser using visdom
             ncols = self.ncols
-            if ncols > 0:        # show all the images in one visdom panel
+            if ncols > 0:  # show all the images in one visdom panel
                 ncols = min(ncols, len(visuals))
                 h, w = next(iter(visuals.values())).shape[:2]
                 table_css = """<style>
@@ -142,7 +141,7 @@ class Visualizer():
                 except VisdomExceptionBase:
                     self.create_visdom_connections()
 
-            else:     # show each image in a separate visdom panel;
+            else:  # show each image in a separate visdom panel;
                 idx = 1
                 try:
                     for label, image in visuals.items():
@@ -201,6 +200,34 @@ class Visualizer():
         except VisdomExceptionBase:
             self.create_visdom_connections()
 
+    def plot_epoch_losses(self, epoch, losses):
+        """display the current losses on visdom display: dictionary of error labels and values
+
+        Parameters:
+            epoch (int)           -- current epoch
+            counter_ratio (float) -- progress (percentage) in the current epoch, between 0 to 1
+            losses (OrderedDict)  -- training losses stored in the format of (name, float) pairs
+        """
+        if not hasattr(self, 'plot_data'):
+            self.plot_data = {'X': [], 'Y': [], 'legend': epoch}
+        self.plot_data['X'].append(epoch)
+        self.plot_data['Y'].append(losses)
+
+        print(np.stack([np.array(self.plot_data['X'])] * epoch, 1)[0])
+        print(np.array(self.plot_data['Y']))
+        try:
+            self.vis.line(
+                X=np.stack([np.array(self.plot_data['X'])] * epoch, 1)[0],
+                Y=np.array(self.plot_data['Y']),
+                opts={
+                    'title': self.name + ' loss over time',
+                    'legend': [self.plot_data['legend']],
+                    'xlabel': 'epoch',
+                    'ylabel': 'loss'},
+                win=self.display_id)
+        except VisdomExceptionBase:
+            self.create_visdom_connections()
+
     # losses: same format as |losses| of plot_current_losses
     def print_current_losses(self, epoch, iters, losses, t_comp, t_data):
         """print current losses on console; also save the losses to the disk
@@ -215,6 +242,25 @@ class Visualizer():
         message = '(epoch: %d, iters: %d, time: %.3f, data: %.3f) ' % (epoch, iters, t_comp, t_data)
         for k, v in losses.items():
             message += '%s: %.3f ' % (k, v)
+
+        print(message)  # print the message
+        with open(self.log_name, "a") as log_file:
+            log_file.write('%s\n' % message)  # save the message
+
+    def print_epoch_losses(self, epoch, iters, losses, t_comp, t_data):
+        """print current losses on console; also save the losses to the disk
+
+        Parameters:
+            epoch (int) -- current epoch
+            iters (int) -- current training iteration during this epoch (reset to 0 at the end of every epoch)
+            losses (OrderedDict) -- training losses stored in the format of (name, float) pairs
+            t_comp (float) -- computational time per data point (normalized by batch_size)
+            t_data (float) -- data loading time per data point (normalized by batch_size)
+        """
+        message = '(epoch: %d, iters: %d, time: %.3f, data: %.3f) ' % (epoch, iters, t_comp, t_data)
+        message += '%s: %.3f' % ('loss', losses)
+        # for k, v in losses.items():
+        #     message += '%s: %.3f ' % (k, v)
 
         print(message)  # print the message
         with open(self.log_name, "a") as log_file:

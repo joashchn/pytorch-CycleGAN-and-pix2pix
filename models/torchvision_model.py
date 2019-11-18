@@ -52,7 +52,7 @@ class TorchVisionModel(BaseModel):
         BaseModel.__init__(self, opt)
 
         # specify the training losses you want to print out. The training/test scripts will call <BaseModel.get_current_losses>
-        self.loss_names = ['train']
+        self.loss_names = ['epoch']
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
         self.model_names = ['Ft']
@@ -164,8 +164,10 @@ class TorchVisionModel(BaseModel):
         # loss_B = self.criterion(self.pred_train_B, self.label_B)
         # self.loss_train = (loss_A + loss_B) * 0.5
 
-        self.loss_train = self.criterion(self.pred_train, self.train_label)
-        self.loss_train.backward()
+        self.loss_ = self.criterion(self.pred_train, self.train_label)
+        self.loss_.backward()
+        self.loss_epoch += self.loss_.item()
+        print(self.loss_, self.loss_epoch)
 
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
