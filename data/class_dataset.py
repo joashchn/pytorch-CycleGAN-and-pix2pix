@@ -52,8 +52,8 @@ class ClassDataset(BaseDataset):
         BaseDataset.__init__(self, opt)
         # get the image paths of your dataset;
         self.data_dir = opt.dataroot
-        self.dir_train = os.path.join(opt.dataroot, 'train')
-        self.dir_val = os.path.join(opt.dataroot, 'val')
+        self.dir_data = os.path.join(opt.dataroot, opt.phase)
+        # self.dir_val = os.path.join(opt.dataroot, 'val')
 
         # define the default transform function. You can use <base_dataset.get_transform>; You can also define your custom transform function
         if opt.model_name == 'inception':
@@ -62,10 +62,10 @@ class ClassDataset(BaseDataset):
             opt.crop_size = 224
         self.transform = get_transform(opt)
 
-        self.train_sets = datasets.ImageFolder(self.dir_train, transform=self.transform)
-        self.val_sets = datasets.ImageFolder(self.dir_val, transform=self.transform)
-        self.train_size = len(self.train_sets)
-        self.val_size = len(self.val_sets)
+        self.data_sets = datasets.ImageFolder(self.dir_data, transform=self.transform)
+        # self.val_sets = datasets.ImageFolder(self.dir_val, transform=self.transform)
+        self.data_size = len(self.data_sets)
+        # self.val_size = len(self.val_sets)
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -81,11 +81,10 @@ class ClassDataset(BaseDataset):
         Step 3: convert your data to a PyTorch tensor. You can use helpder functions such as self.transform. e.g., data = self.transform(image)
         Step 4: return a data point as a dictionary.
         """
-        train_data = self.train_sets[index % self.train_size]
-        val_data = self.val_sets[index % self.val_size]
-        return {'train': train_data,
-                'val': val_data}
+        t_data = self.data_sets[index % self.data_size]
+        # val_data = self.val_sets[index % self.val_size]
+        return {'train': t_data}
 
     def __len__(self):
         """Return the total number of images."""
-        return self.train_size
+        return self.data_size

@@ -124,11 +124,12 @@ class TorchVisionModel(BaseModel):
             self.netFt = torch.nn.DataParallel(self.netFt, device_ids=opt.gpu_ids)
             self.netFt = self.netFt.cuda(opt.gpu_ids[0])
 
-        # 观察所有参数都在优化
-        self.optimizer_ft = optim.SGD(self.netFt.parameters(), lr=opt.lr, momentum=0.9)
-        self.optimizers.append(self.optimizer_ft)
+        if self.isTrain:
+            # 观察所有参数都在优化
+            self.optimizer_ft = optim.SGD(self.netFt.parameters(), lr=opt.lr, momentum=0.9)
+            self.optimizers.append(self.optimizer_ft)
 
-        self.criterion = nn.CrossEntropyLoss()
+            self.criterion = nn.CrossEntropyLoss()
 
     def set_input(self, inputs):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
@@ -151,23 +152,23 @@ class TorchVisionModel(BaseModel):
         --dataroot ./datasets/hymenoptera_data --name hymennoptera_squeezenet --model torchvision --gpu_ids -1 --dataset_mode class
         --dataroot ./datasets/horse2zebra --name horse2zebra_cyclegan --model cycle_gan --gpu_ids -1
         """
-        # self.pred_train_B = self.netFt(self.train_B)
-        # self.pred_val_A = self.netFt(self.val_A)
-        # self.pred_val_B = self.netFt(self.val_B)
-        # self.label_A = torch.ones([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
-        # self.label_B = torch.zeros([self.pred_train_A.shape[0]], dtype=torch.long).to(self.device)
+        # self.outputs_B = self.netFt(self.train_B)
+        # self.outputsval_A = self.netFt(self.val_A)
+        # self.outputsval_B = self.netFt(self.val_B)
+        # self.label_A = torch.ones([self.outputs_A.shape[0]], dtype=torch.long).to(self.device)
+        # self.label_B = torch.zeros([self.outputs_A.shape[0]], dtype=torch.long).to(self.device)
 
-        self.pred_train = self.netFt(self.train_imgs)
+        self.outputs = self.netFt(self.train_imgs)
 
     def backward_Ft(self):
-        # loss_A = self.criterion(self.pred_train_A, self.label_A)
-        # loss_B = self.criterion(self.pred_train_B, self.label_B)
+        # loss_A = self.criterion(self.outputs_A, self.label_A)
+        # loss_B = self.criterion(self.outputs_B, self.label_B)
         # self.loss_train = (loss_A + loss_B) * 0.5
 
-        self.loss_ = self.criterion(self.pred_train, self.train_label)
+        self.loss_ = self.criterion(self.outputs, self.train_label)
         self.loss_.backward()
         self.loss_epoch += self.loss_.item()
-        _, preds = torch.max(self.pred_train, 1)
+        _, preds = torch.max(self.outputs, 1)
         self.corrects_epoch += torch.sum(preds == self.train_label.data)
         # print(self.loss_, self.loss_epoch)
         # print(torch.sum(preds == self.train_label.data), self.corrects_epoch)

@@ -45,6 +45,8 @@ class BaseModel(ABC):
         self.metric = 0  # used for learning rate policy 'plateau'
         self.loss_epoch = 0
         self.corrects_epoch = 0
+        self.outputs = torch.tensor([-1])
+        # self.train_label
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
@@ -107,6 +109,12 @@ class BaseModel(ABC):
         with torch.no_grad():
             self.forward()
             self.compute_visuals()
+
+    def get_current_test_results(self):
+
+        _, preds = torch.max(self.outputs, 1)
+        self.corrects_epoch += torch.sum(preds == self.train_label.data)
+        # print(self.corrects_epoch)
 
     def compute_visuals(self):
         """Calculate additional output images for visdom and HTML visualization"""
