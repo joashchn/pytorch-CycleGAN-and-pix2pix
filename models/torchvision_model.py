@@ -167,7 +167,10 @@ class TorchVisionModel(BaseModel):
         self.loss_ = self.criterion(self.pred_train, self.train_label)
         self.loss_.backward()
         self.loss_epoch += self.loss_.item()
-        print(self.loss_, self.loss_epoch)
+        _, preds = torch.max(self.pred_train, 1)
+        self.corrects_epoch += torch.sum(preds == self.train_label.data)
+        # print(self.loss_, self.loss_epoch)
+        # print(torch.sum(preds == self.train_label.data), self.corrects_epoch)
 
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""

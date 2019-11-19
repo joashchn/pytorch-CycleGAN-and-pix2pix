@@ -200,7 +200,7 @@ class Visualizer():
         except VisdomExceptionBase:
             self.create_visdom_connections()
 
-    def plot_epoch_losses(self, epoch, losses):
+    def plot_epoch_info(self, epoch, data, display_id, title):
         """display the current losses on visdom display: dictionary of error labels and values
 
         Parameters:
@@ -210,21 +210,22 @@ class Visualizer():
         """
         if not hasattr(self, 'plot_data'):
             self.plot_data = {'X': [], 'Y': [], 'legend': epoch}
-        self.plot_data['X'].append(epoch)
-        self.plot_data['Y'].append(losses)
+        self.plot_data['X'] = epoch
+        try:
+            self.plot_data[title].append(data)
+        except:
+            self.plot_data[title] = [data]
 
-        print(np.stack([np.array(self.plot_data['X'])] * epoch, 1)[0])
-        print(np.array(self.plot_data['Y']))
         try:
             self.vis.line(
-                X=np.stack([np.array(self.plot_data['X'])] * epoch, 1)[0],
-                Y=np.array(self.plot_data['Y']),
+                X=np.arange(0, epoch),
+                Y=np.array(self.plot_data[title]),
                 opts={
-                    'title': self.name + ' loss over time',
+                    'title': self.name + '_' + title,
                     'legend': [self.plot_data['legend']],
                     'xlabel': 'epoch',
-                    'ylabel': 'loss'},
-                win=self.display_id)
+                    'ylabel': title},
+                win=display_id)
         except VisdomExceptionBase:
             self.create_visdom_connections()
 
