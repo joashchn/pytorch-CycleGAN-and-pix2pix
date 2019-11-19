@@ -76,7 +76,7 @@ if __name__ == '__main__':
         loss_epoch = list(model.get_current_losses().values())[0] / dataset_size
         acc_epoch = model.corrects_epoch.item() / dataset_size
         t_comp = (time.time() - epoch_start_time) / opt.batch_size
-        visualizer.print_epoch_losses(epoch, epoch_iter, loss_epoch, t_comp, time.time() - epoch_start_time)
+        visualizer.print_epoch_losses(epoch, epoch_iter, loss_epoch, acc_epoch, t_comp, time.time() - epoch_start_time)
         if opt.display_id > 0:
             visualizer.plot_epoch_info(epoch, loss_epoch, opt.display_id + 10, 'loss')
             visualizer.plot_epoch_info(epoch, acc_epoch, opt.display_id + 11, 'acc')

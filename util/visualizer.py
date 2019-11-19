@@ -248,7 +248,7 @@ class Visualizer():
         with open(self.log_name, "a") as log_file:
             log_file.write('%s\n' % message)  # save the message
 
-    def print_epoch_losses(self, epoch, iters, losses, t_comp, t_data):
+    def print_epoch_losses(self, epoch, iters, losses, acc, t_comp, t_data):
         """print current losses on console; also save the losses to the disk
 
         Parameters:
@@ -260,6 +260,7 @@ class Visualizer():
         """
         message = '(epoch: %d, iters: %d, time: %.3f, data: %.3f) ' % (epoch, iters, t_comp, t_data)
         message += '%s: %.3f' % ('loss', losses)
+        message += ', %s: %.3f' % ('acc', acc)
         # for k, v in losses.items():
         #     message += '%s: %.3f ' % (k, v)
 
