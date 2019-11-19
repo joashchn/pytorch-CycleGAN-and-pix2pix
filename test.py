@@ -33,6 +33,8 @@ from models import create_model
 from util.visualizer import save_images
 from util import html
 
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 if __name__ == '__main__':
     opt = TestOptions().parse()  # get test options
@@ -59,8 +61,8 @@ if __name__ == '__main__':
     if opt.eval:
         model.eval()
     for i, data in enumerate(dataset):
-        if i >= opt.num_test:  # only apply our model to opt.num_test images.
-            break
+        # if i >= opt.num_test:  # only apply our model to opt.num_test images.
+        #     break
         model.set_input(data)  # unpack data from data loader
         model.test()           # run inference
         if model.model_names[0] == 'Ft':
