@@ -24,6 +24,7 @@ from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
 from collections import OrderedDict
+from util.util import cal_process
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()  # get training options
@@ -52,7 +53,7 @@ if __name__ == '__main__':
             epoch_iter += opt.batch_size
             model.set_input(data)  # unpack data from dataset and apply preprocessing
             model.optimize_parameters()  # calculate loss functions, get gradients, update network weights
-
+            cal_process(epoch_iter, dataset_size)
             # if total_iters % opt.display_freq == 0:   # display images on visdom and save images to a HTML file
             #     save_result = total_iters % opt.update_html_freq == 0
             #     model.compute_visuals()
@@ -81,9 +82,9 @@ if __name__ == '__main__':
             visualizer.plot_epoch_info(epoch, loss_epoch, opt.display_id + 10, 'loss')
             visualizer.plot_epoch_info(epoch, acc_epoch, opt.display_id + 11, 'acc')
 
+        model.save_networks('latest')
         if epoch % opt.save_epoch_freq == 0:  # cache our model every <save_epoch_freq> epochs
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
-            model.save_networks('latest')
             model.save_networks(epoch)
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (

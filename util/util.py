@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from PIL import Image
 import os
+import time
 
 
 def tensor2im(input_image, imtype=np.uint8):
@@ -101,3 +102,7 @@ def mkdir(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
+
+def cal_process(i, max_tep):
+    print('['+'>'*i+' '*(max_tep-i)+']'+str(int(100/(max_tep-1)*i))+'%'+'\r', end='')
+    print('\n')
