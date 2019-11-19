@@ -32,6 +32,7 @@ from data import create_dataset
 from models import create_model
 from util.visualizer import save_images
 from util import html
+from tqdm import tqdm
 
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     opt.display_id = -1   # no visdom display; the test code saves the results to a HTML file.
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
     dataset_size = len(dataset)
-    print(dataset_size)
+    # print(dataset_size)
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
     # create a website
@@ -60,19 +61,22 @@ if __name__ == '__main__':
     # For [CycleGAN]: It should not affect CycleGAN as CycleGAN uses instancenorm without dropout.
     if opt.eval:
         model.eval()
-    for i, data in enumerate(dataset):
-        # if i >= opt.num_test:  # only apply our model to opt.num_test images.
-        #     break
-        model.set_input(data)  # unpack data from data loader
-        model.test()           # run inference
-        if model.model_names[0] == 'Ft':
-            model.get_current_test_results()
-            continue
-        visuals = model.get_current_visuals()  # get image results
-        img_path = model.get_image_paths()     # get image paths
-        if i % 5 == 0:  # save images to an HTML file
-            print('processing (%04d)-th image... %s' % (i, img_path))
-        save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
+
+    with tqdm(total=dataset_size) as pbar:
+        for i, data in enumerate(dataset):
+            # if i >= opt.num_test:  # only apply our model to opt.num_test images.
+            #     break
+            model.set_input(data)  # unpack data from data loader
+            model.test()           # run inference
+            pbar.update(1)
+            if model.model_names[0] == 'Ft':
+                model.get_current_test_results()
+                continue
+            visuals = model.get_current_visuals()  # get image results
+            img_path = model.get_image_paths()     # get image paths
+            if i % 5 == 0:  # save images to an HTML file
+                print('processing (%04d)-th image... %s' % (i, img_path))
+            save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
     test_acc = model.corrects_epoch.item() / dataset_size
-    print(test_acc)
+    print('the acc in test datasets is %s ' % test_acc)
     webpage.save()  # save the HTML
