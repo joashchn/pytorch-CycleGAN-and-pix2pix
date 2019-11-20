@@ -72,7 +72,7 @@ if __name__ == '__main__':
             #     break
             model.set_input(data)  # unpack data from data loader
             model.test()           # run inference
-            # pbar.update(1)
+            pbar.update(1)
             if model.model_names[0] == 'Ft':
                 model.get_current_test_results()
                 if i % 10 == 0:

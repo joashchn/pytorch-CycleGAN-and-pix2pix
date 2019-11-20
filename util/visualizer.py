@@ -179,8 +179,8 @@ class Visualizer():
 
         if self.display_id > 0:
 
-            self.vis.image(img, win=display_id)
-            self.vis.text(label, win=display_id+1)
+            self.vis.image(img, win=display_id, opts={'title': 'class:%s' % display_id})
+            # self.vis.text(label, win=display_id+1)
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
         """display the current losses on visdom display: dictionary of error labels and values
