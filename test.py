@@ -33,6 +33,8 @@ from models import create_model
 from util.visualizer import save_images
 from util import html
 from tqdm import tqdm
+import torch
+from util.visualizer import Visualizer
 
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     opt.batch_size = 1    # test code only supports batch_size = 1
     opt.serial_batches = True  # disable data shuffling; comment this line if results on randomly chosen images are needed.
     opt.no_flip = True    # no flip; comment this line if results on flipped images are needed.
-    opt.display_id = -1   # no visdom display; the test code saves the results to a HTML file.
+    # opt.display_id = -1   # no visdom display; the test code saves the results to a HTML file.
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
     dataset_size = len(dataset)
     # print(dataset_size)
@@ -62,15 +64,20 @@ if __name__ == '__main__':
     if opt.eval:
         model.eval()
 
+    visualizer = Visualizer(opt)
+
     with tqdm(total=dataset_size) as pbar:
         for i, data in enumerate(dataset):
             # if i >= opt.num_test:  # only apply our model to opt.num_test images.
             #     break
             model.set_input(data)  # unpack data from data loader
             model.test()           # run inference
-            pbar.update(1)
+            # pbar.update(1)
             if model.model_names[0] == 'Ft':
                 model.get_current_test_results()
+                if i % 10 == 0:
+                    _, preds = torch.max(model.outputs, 1)
+                    visualizer.display_img_and_label(data['train'][0][0], preds.item(), 5)
                 continue
             visuals = model.get_current_visuals()  # get image results
             img_path = model.get_image_paths()     # get image paths
