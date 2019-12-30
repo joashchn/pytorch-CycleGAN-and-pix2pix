@@ -54,6 +54,7 @@ class ClassDataset(BaseDataset):
         self.data_dir = opt.dataroot
         self.dir_data = os.path.join(opt.dataroot, opt.phase)
         # self.dir_val = os.path.join(opt.dataroot, 'val')
+        self.AB_paths = sorted(make_dataset(self.dir_data, opt.max_dataset_size))
 
         # define the default transform function. You can use <base_dataset.get_transform>; You can also define your custom transform function
         if opt.model_name == 'inception':
@@ -82,8 +83,9 @@ class ClassDataset(BaseDataset):
         Step 4: return a data point as a dictionary.
         """
         t_data = self.data_sets[index % self.data_size]
+        t_path = self.AB_paths[index]
         # val_data = self.val_sets[index % self.val_size]
-        return {'train': t_data}
+        return {'train': t_data, 'path': t_path}
 
     def __len__(self):
         """Return the total number of images."""

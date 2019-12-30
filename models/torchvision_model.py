@@ -143,9 +143,9 @@ class TorchVisionModel(BaseModel):
         # self.train_B = inputs['train_B'].to(self.device)
         # self.val_A = inputs['val_A'].to(self.device)
         # self.val_B = inputs['val_B'].to(self.device)
-
         self.train_imgs = inputs['train'][0].to(self.device)
         self.train_label = inputs['train'][1].to(self.device)
+        self.image_paths = inputs['path']
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
